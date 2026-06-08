@@ -21,3 +21,24 @@ jobs:
             git pull origin main
             sudo nginx -t
             sudo systemctl reload nginx
+
+      - name: Teams 배포 알림
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          curl -H "Content-Type: application/json" -d '{
+            "type": "message",
+            "attachments": [{
+              "contentType": "application/vnd.microsoft.card.adaptive",
+              "content": {
+                "type": "AdaptiveCard",
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "version": "1.4",
+                "body": [
+                  { "type": "TextBlock", "size": "Large", "weight": "Bolder", "text": "🚀 CDtest 배포 알림입니당~~ 경고경고 삐용삐용" },
+                  { "type": "TextBlock", "text": "상태: '"$STATUS"'", "wrap": true },
+                  { "type": "TextBlock", "text": "커밋: ${{ github.sha }}", "wrap": true, "isSubtle": true }
+                ]
+              }
+            }]
+          }' ${{ secrets.TEAMS_WEBHOOK }}
